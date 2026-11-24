@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#FF6A00">
+<title>PubliGo - Publiez. Vendez. Trouvez.</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--or:#FF6A00;--or2:#E55F00;--nuit:#0B1F3A;--gris:#F2F4F7;--txt:#1b2430;--mut:#6b7684;--ok:#1a9b5a;--ko:#d93a3a}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:#fff;color:var(--txt);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+body{padding-bottom:78px}
+header{position:sticky;top:0;z-index:20;background:var(--nuit);color:#fff;padding:12px 16px;padding-top:calc(12px + env(safe-area-inset-top))}
+.logo{font-size:22px;font-weight:800;letter-spacing:.2px}.logo b{color:var(--or)}
+.slogan{font-size:12px;opacity:.8;margin-top:2px}
+main{max-width:760px;margin:0 auto;padding:14px 14px 20px}
+h2{margin:6px 0 12px;font-size:20px;color:var(--nuit)}
+.muted{color:var(--mut);font-size:14px}
+.search{display:flex;gap:8px;margin-bottom:10px}
+input,select,textarea{width:100%;padding:12px;border:1.5px solid #d9dee5;border-radius:12px;font-size:16px;background:#fff;color:var(--txt);font-family:inherit}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--or)}
+textarea{min-height:100px;resize:vertical}
+label{display:block;font-size:13px;font-weight:600;margin:12px 0 5px;color:var(--nuit)}
+.btn{background:var(--or);color:#fff;border:0;border-radius:12px;padding:12px 16px;font-size:16px;font-weight:700;cursor:pointer;white-space:nowrap}
+.btn:active{background:var(--or2)}.btn:disabled{opacity:.6}
+.btn.full{width:100%;margin-top:16px}
+.btn.alt{background:var(--nuit)}.btn.ghost{background:#fff;color:var(--nuit);border:1.5px solid #d9dee5}
+.btn.danger{background:#fff;color:var(--ko);border:1.5px solid var(--ko);padding:8px 12px;font-size:14px}
+.chips{display:flex;gap:8px;overflow-x:auto;padding:4px 0 10px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:0 0 auto;border:1.5px solid #d9dee5;background:#fff;color:var(--nuit);padding:8px 14px;border-radius:999px;font-size:14px;font-weight:600;cursor:pointer}
+.chip.on{background:var(--or);border-color:var(--or);color:#fff}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:12px}
+@media(min-width:640px){.grid{grid-template-columns:repeat(3,1fr)}}
+.card{background:#fff;border:1px solid #e6e9ee;border-radius:14px;overflow:hidden;cursor:pointer;box-shadow:0 1px 3px rgba(11,31,58,.06)}
+.card .ph{aspect-ratio:1/1;background:var(--gris);display:flex;align-items:center;justify-content:center;font-size:38px;overflow:hidden}
+.card .ph img{width:100%;height:100%;object-fit:cover;display:block}
+.card .bd{padding:10px}
+.card .t{font-size:14px;font-weight:600;line-height:1.3;max-height:2.6em;overflow:hidden}
+.card .p{color:var(--or);font-weight:800;margin-top:5px;font-size:15px}
+.card .m{color:var(--mut);font-size:12px;margin-top:3px}
+.tag{display:inline-block;background:#fff3e8;color:var(--or2);font-size:11px;font-weight:700;padding:2px 7px;border-radius:6px;margin-left:4px}
+.overlay{position:fixed;inset:0;background:#fff;z-index:50;overflow-y:auto;padding-bottom:30px}
+.overlay .top{position:sticky;top:0;background:#fff;padding:12px 14px;padding-top:calc(12px + env(safe-area-inset-top));display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #eee;z-index:2}
+.overlay .in{max-width:760px;margin:0 auto;padding:14px}
+.gal{display:flex;gap:8px;overflow-x:auto;scroll-snap-type:x mandatory;margin-bottom:12px}
+.gal img,.gal video{flex:0 0 92%;max-height:380px;object-fit:cover;border-radius:14px;scroll-snap-align:center;background:#000}
+.price{font-size:24px;font-weight:800;color:var(--or);margin:6px 0}
+.row{display:flex;gap:10px;flex-wrap:wrap}.row .btn{flex:1;text-align:center;text-decoration:none;display:block}
+.desc{white-space:pre-wrap;line-height:1.5;margin:14px 0}
+nav{position:fixed;bottom:0;left:0;right:0;z-index:30;background:#fff;border-top:1px solid #e6e9ee;display:flex;padding-bottom:env(safe-area-inset-bottom)}
+nav button{flex:1;background:none;border:0;padding:10px 4px 9px;font-size:11px;font-weight:600;color:var(--mut);cursor:pointer}
+nav button .i{display:block;font-size:22px;line-height:1.1}
+nav button.on{color:var(--or)}
+.box{background:var(--gris);border-radius:14px;padding:14px;margin:12px 0}
+.notice{background:#fff3e8;border:1px solid #ffd9b8;color:#8a4300;border-radius:12px;padding:10px 12px;font-size:13px;margin-top:12px}
+.tabs{display:flex;gap:8px;margin-bottom:6px}.tabs .btn{flex:1}
+.mine{display:flex;gap:12px;border:1px solid #e6e9ee;border-radius:14px;padding:10px;margin-bottom:10px;align-items:center}
+.mine img,.mine .ph2{width:72px;height:72px;border-radius:10px;object-fit:cover;background:var(--gris);display:flex;align-items:center;justify-content:center;font-size:28px;flex:0 0 72px}
+.mine .info{flex:1;min-width:0}.mine .info b{display:block;font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%);background:var(--nuit);color:#fff;padding:11px 16px;border-radius:12px;font-size:14px;z-index:99;max-width:88%;text-align:center;display:none}
+.empty{text-align:center;padding:40px 10px;color:var(--mut)}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">Publi<b>Go</b></div>
+  <div class="slogan">Publiez. Vendez. Trouvez.</div>
+</header>
+<main id="view"></main>
+<nav id="nav"></nav>
+<div id="toast"></div>
+<noscript>Activez JavaScript pour utiliser PubliGo.</noscript>
+
+<script>
+/* ====== Configuration ====== */
+const SUPABASE_URL = 'https://nroolahriwvoxevmbrfh.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_IaTHP7KKp0oGkj0qovcjSQ_HJj9xlrQ';
+const BUCKET = 'listing-media';
+const PAYMENT_ENABLED = false;      // passera à true quand le paiement mobile money sera branché
+const PRICE_PHOTO = 500, PRICE_VIDEO = 1000;
+const MAX_IMAGES = 5, MAX_VIDEO_MB = 15;
+const CATS = ['Immobilier','Véhicules','Téléphones & Électronique','Mode & Beauté','Maison & Meubles','Emplois & Services','Alimentation','Autres'];
+const CITIES = ['Abidjan','Bouaké','Yamoussoukro','San-Pédro','Daloa','Korhogo','Man','Autre ville'];
+
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+let user = null, tab = 'home';
+let filters = { q: '', cat: '', city: '' };
+const cache = {};
+
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fcfa = n => (n === null || n === undefined || n === '') ? 'Prix à discuter' : Number(n).toLocaleString('fr-FR') + ' FCFA';
+const dateFr = d => new Date(d).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+const emoji = c => ({'Immobilier':'🏠','Véhicules':'🚗','Téléphones & Électronique':'📱','Mode & Beauté':'👗','Maison & Meubles':'🛋️','Emplois & Services':'💼','Alimentation':'🍲'}[c] || '🛍️');
+
+function toast(msg) {
+  const t = $('#toast'); t.textContent = msg; t.style.display = 'block';
+  clearTimeout(toast.t); toast.t = setTimeout(() => t.style.display = 'none', 3500);
+}
+function waNumber(p) {
+  let d = String(p || '').replace(/\D/g, '');
+  if (d.startsWith('00')) d = d.slice(2);
+  if (d.length <= 10) d = '225' + d;
+  return d;
+}
+
+/* ====== Navigation ====== */
+function renderNav() {
+  const items = [['home','🏠','Accueil'],['publish','➕','Publier'],['mine','📋','Mes annonces'],['account','👤', user ? 'Compte' : 'Connexion']];
+  $('#nav').innerHTML = items.map(([k,i,l]) => `<button class="${tab===k?'on':''}" onclick="go('${k}')"><span class="i">${i}</span>${l}</button>`).join('');
+}
+function go(t) {
+  if ((t === 'publish' || t === 'mine') && !user) { toast('Connectez-vous pour continuer'); t = 'account'; }
+  tab = t; renderNav(); window.scrollTo(0, 0);
+  ({ home: renderHome, publish: renderPublish, mine: renderMine, account: renderAccount })[t]();
+}
+
+/* ====== Accueil ====== */
+function renderHome() {
+  $('#view').innerHTML = `
+    <div class="search">
+      <input id="q" type="search" placeholder="Que cherchez-vous ?" value="${esc(filters.q)}" onkeydown="if(event.key==='Enter')applySearch()">
+      <button class="btn" onclick="applySearch()">OK</button>
+    </div>
+    <div class="chips">
+      <button class="chip ${!filters.cat?'on':''}" onclick="setCat(-1)">Tout</button>
+      ${CATS.map((c,i) => `<button class="chip ${filters.cat===c?'on':''}" onclick="setCat(${i})">${esc(c)}</button>`).join('')}
+    </div>
+    <select id="city" onchange="setCity(this.value)">
+      <option value="">Toutes les villes</option>
+      ${CITIES.map(c => `<option ${filters.city===c?'selected':''}>${esc(c)}</option>`).join('')}
+    </select>
+    <div id="list" class="grid"><p class="muted">Chargement…</p></div>`;
+  loadList();
+}
+function applySearch() { filters.q = $('#q').value.trim(); loadList(); }
+function setCat(i) { filters.cat = i < 0 ? '' : CATS[i]; renderHome(); }
+function setCity(v) { filters.city = v; loadList(); }
+
+async function loadList() {
+  const box = $('#list'); if (!box) return;
+  let qb = sb.from('listings').select('*').eq('status', 'active').order('created_at', { ascending: false }).limit(60);
+  if (filters.cat) qb = qb.eq('category', filters.cat);
+  if (filters.city) qb = qb.eq('city', filters.city);
+  const q = filters.q.replace(/[,()%*\\]/g, ' ').trim();
+  if (q) qb = qb.or(`title.ilike.%${q}%,description.ilike.%${q}%`);
+  const { data, error } = await qb;
+  if (error) { box.innerHTML = `<p class="muted">Impossible de charger les annonces. Vérifiez votre connexion.</p>`; return; }
+  if (!data.length) { box.style.display = 'block'; box.innerHTML = `<div class="empty">Aucune annonce pour le moment.<br>Soyez le premier à publier !</div>`; return; }
+  box.style.display = ''; 
+  data.forEach(r => cache[r.id] = r);
+  box.innerHTML = data.map(card).join('');
+}
+function card(r) {
+  const img = (r.images && r.images[0]) ? `<img loading="lazy" src="${esc(r.images[0])}" alt="">` : emoji(r.category);
+  return `<div class="card" onclick="openDetail('${esc(r.id)}')">
+    <div class="ph">${img}</div>
+    <div class="bd"><div class="t">${esc(r.title)}</div>
+    <div class="p">${esc(fcfa(r.price))}</div>
+    <div class="m">${esc(r.city || '')} · ${dateFr(r.created_at)}${r.video_url ? '<span class="tag">Vidéo</span>' : ''}</div></div></div>`;
+}
+
+/* ====== Détail d'une annonce ====== */
+function openDetail(id) {
+  const r = cache[id]; if (!r) return;
+  const media = (r.images || []).map(u => `<img src="${esc(u)}" alt="">`).join('') + (r.video_url ? `<video src="${esc(r.video_url)}" controls playsinline></video>` : '');
+  const num = waNumber(r.phone);
+  const msg = encodeURIComponent(`Bonjour, je suis intéressé(e) par votre annonce « ${r.title} » sur PubliGo.`);
+  const ov = document.createElement('div'); ov.className = 'overlay'; ov.id = 'ov';
+  ov.innerHTML = `<div class="top"><b>Annonce</b><button class="btn ghost" onclick="closeDetail()">Fermer</button></div>
+    <div class="in">
+      ${media ? `<div class="gal">${media}</div>` : `<div class="card ph" style="aspect-ratio:16/9;display:flex;align-items:center;justify-content:center;font-size:60px;cursor:default">${emoji(r.category)}</div>`}
+      <h2>${esc(r.title)}</h2>
+      <div class="price">${esc(fcfa(r.price))}</div>
+      <div class="muted">${esc(r.category || '')} · ${esc(r.city || '')} · ${esc(r.seller_type === 'professionnel' ? 'Professionnel' : 'Particulier')} · ${dateFr(r.created_at)}</div>
+      <div class="desc">${esc(r.description || 'Aucune description.')}</div>
+      <div class="row">
+        <a class="btn" style="background:#1a9b5a" target="_blank" rel="noopener" href="https://wa.me/${num}?text=${msg}">WhatsApp</a>
+        <a class="btn alt" href="tel:+${num}">Appeler</a>
+      </div>
+      <div class="notice">Conseil sécurité : rencontrez le vendeur dans un lieu public et ne payez qu'après avoir vu l'article.</div>
+    </div>`;
+  document.body.appendChild(ov);
+}
+function closeDetail() { const o = $('#ov'); if (o) o.remove(); }
+
+/* ====== Publier ====== */
+function renderPublish() {
+  $('#view').innerHTML = `
+    <h2>Publier une annonce</h2>
+    <form id="pf" onsubmit="submitListing(event)">
+      <label>Titre *</label><input name="titre" maxlength="80" required placeholder="Ex : iPhone 12 128 Go en bon état">
+      <label>Catégorie *</label><select name="categorie" required><option value="">Choisir…</option>${CATS.map(c => `<option>${esc(c)}</option>`).join('')}</select>
+      <label>Prix (FCFA)</label><input name="prix" type="number" min="0" inputmode="numeric" placeholder="Laisser vide si à discuter">
+      <label>Ville *</label><select name="ville" required><option value="">Choisir…</option>${CITIES.map(c => `<option>${esc(c)}</option>`).join('')}</select>
+      <label>Description</label><textarea name="desc" maxlength="2000" placeholder="Décrivez votre article ou service"></textarea>
+      <label>Numéro de téléphone / WhatsApp *</label><input name="tel" type="tel" required inputmode="tel" placeholder="0700000000" value="${esc(user?.user_metadata?.phone || '')}">
+      <label>Vous êtes</label><select name="type"><option value="particulier">Particulier</option><option value="professionnel">Professionnel</option></select>
+      <label>Photos * (1 à ${MAX_IMAGES})</label><input id="imgs" type="file" accept="image/*" multiple onchange="updateFee()">
+      <label>Vidéo (facultatif, ${MAX_VIDEO_MB} Mo max)</label><input id="vid" type="file" accept="video/*" onchange="updateFee()">
+      <div class="box" id="fee"></div>
+      <div class="notice">${PAYMENT_ENABLED ? 'Le paiement se fait par Mobile Money avant la mise en ligne.' : 'Le paiement Mobile Money sera bientôt disponible. Pour le moment, la publication est enregistrée sans paiement.'}</div>
+      <button class="btn full" type="submit" id="sub">Publier mon annonce</button>
+    </form>`;
+  updateFee();
+}
+function updateFee() {
+  const v = $('#vid'); const hasVid = v && v.files && v.files.length > 0;
+  const f = $('#fee'); if (f) f.innerHTML = `<b>Frais de publication : ${(hasVid ? PRICE_VIDEO : PRICE_PHOTO).toLocaleString('fr-FR')} FCFA</b><br><span class="muted">${hasVid ? 'Annonce avec photos et vidéo' : 'Annonce avec photos'} · conservée jusqu'à suppression par vous</span>`;
+}
+function compress(file, max = 1280, q = 0.8) {
+  return new Promise((res, rej) => {
+    const img = new Image(); const url = URL.createObjectURL(file);
+    img.onload = () => {
+      const r = Math.min(1, max / Math.max(img.width, img.height));
+      const w = Math.round(img.width * r), h = Math.round(img.height * r);
+      const c = document.createElement('canvas'); c.width = w; c.height = h;
+      c.getContext('2d').drawImage(img, 0, 0, w, h);
+      c.toBlob(b => { URL.revokeObjectURL(url); b ? res(b) : rej(new Error('compression')); }, 'image/jpeg', q);
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); rej(new Error('image illisible')); };
+    img.src = url;
+  });
+}
+async function submitListing(e) {
+  e.preventDefault();
+  if (!user) { go('account'); return; }
+  const fd = new FormData(e.target);
+  const files = Array.from($('#imgs').files);
+  const vfile = $('#vid').files[0];
+  if (files.length < 1) { toast('Ajoutez au moins une photo'); return; }
+  if (files.length > MAX_IMAGES) { toast(`Maximum ${MAX_IMAGES} photos`); return; }
+  if (vfile && vfile.size > MAX_VIDEO_MB * 1024 * 1024) { toast(`Vidéo trop lourde (max ${MAX_VIDEO_MB} Mo)`); return; }
+  const btn = $('#sub'); btn.disabled = true;
+  try {
+    const stamp = Date.now(); const urls = [];
+    for (let i = 0; i < files.length; i++) {
+      btn.textContent = `Envoi des photos ${i + 1}/${files.length}…`;
+      const blob = await compress(files[i]);
+      const path = `${user.id}/${stamp}-${i}.jpg`;
+      const { error } = await sb.storage.from(BUCKET).upload(path, blob, { contentType: 'image/jpeg' });
+      if (error) throw error;
+      urls.push(sb.storage.from(BUCKET).getPublicUrl(path).data.publicUrl);
+    }
+    let videoUrl = null;
+    if (vfile) {
+      btn.textContent = 'Envoi de la vidéo…';
+      const ext = (vfile.name.split('.').pop() || 'mp4').toLowerCase().replace(/[^a-z0-9]/g, '');
+      const path = `${user.id}/${stamp}-v.${ext || 'mp4'}`;
+      const { error } = await sb.storage.from(BUCKET).upload(path, vfile, { contentType: vfile.type || 'video/mp4' });
+      if (error) throw error;
+      videoUrl = sb.storage.from(BUCKET).getPublicUrl(path).data.publicUrl;
+    }
+    btn.textContent = 'Publication…';
+    const prix = fd.get('prix');
+    const { error } = await sb.from('listings').insert({
+      user_id: user.id,
+      title: String(fd.get('titre')).trim(),
+      category: fd.get('categorie'),
+      price: prix === '' ? null : Number(prix),
+      city: fd.get('ville'),
+      description: String(fd.get('desc') || '').trim(),
+      phone: String(fd.get('tel')).trim(),
+      seller_type: fd.get('type'),
+      images: urls,
+      video_url: videoUrl,
+      status: 'active',
+      payment_status: 'unpaid'
+    });
+    if (error) throw error;
+    toast('Annonce publiée !'); go('mine');
+  } catch (err) {
+    console.error(err);
+    toast('Échec de la publication : ' + (err.message || 'erreur inconnue'));
+    btn.disabled = false; btn.textContent = 'Publier mon annonce';
+  }
+}
+
+/* ====== Mes annonces ====== */
+async function renderMine() {
+  $('#view').innerHTML = `<h2>Mes annonces</h2><div id="ml"><p class="muted">Chargement…</p></div>`;
+  const { data, error } = await sb.from('listings').select('*').eq('user_id', user.id).order('created_at', { ascending: false });
+  const box = $('#ml');
+  if (error) { box.innerHTML = `<p class="muted">Impossible de charger vos annonces.</p>`; return; }
+  if (!data.length) { box.innerHTML = `<div class="empty">Vous n'avez pas encore d'annonce.<br><br><button class="btn" onclick="go('publish')">Publier ma première annonce</button></div>`; return; }
+  data.forEach(r => cache[r.id] = r);
+  box.innerHTML = data.map(r => `<div class="mine">
+    ${(r.images && r.images[0]) ? `<img src="${esc(r.images[0])}" alt="">` : `<div class="ph2">${emoji(r.category)}</div>`}
+    <div class="info"><b>${esc(r.title)}</b><span class="muted">${esc(fcfa(r.price))} · ${dateFr(r.created_at)}</span></div>
+    <div style="display:flex;flex-direction:column;gap:6px">
+      <button class="btn ghost" style="padding:8px 12px;font-size:14px" onclick="openDetail('${esc(r.id)}')">Voir</button>
+      <button class="btn danger" onclick="deleteListing('${esc(r.id)}')">Supprimer</button>
+    </div></div>`).join('');
+}
+async function deleteListing(id) {
+  if (!confirm('Supprimer cette annonce définitivement ?')) return;
+  const r = cache[id];
+  const paths = ((r && r.images) || []).concat(r && r.video_url ? [r.video_url] : [])
+    .map(u => decodeURIComponent((u.split('/' + BUCKET + '/')[1] || ''))).filter(Boolean);
+  const { error } = await sb.from('listings').delete().eq('id', id);
+  if (error) { toast('Suppression impossible'); return; }
+  if (paths.length) await sb.storage.from(BUCKET).remove(paths);
+  toast('Annonce supprimée'); renderMine();
+}
+
+/* ====== Compte ====== */
+let authMode = 'login';
+function renderAccount() {
+  if (user) {
+    const n = user.user_metadata?.full_name || '';
+    $('#view').innerHTML = `<h2>Mon compte</h2>
+      <div class="box"><b>${esc(n || 'Utilisateur PubliGo')}</b><br><span class="muted">${esc(user.email)}</span>${user.user_metadata?.phone ? `<br><span class="muted">${esc(user.user_metadata.phone)}</span>` : ''}</div>
+      <button class="btn full" onclick="go('mine')">Mes annonces</button>
+      <button class="btn ghost full" onclick="logout()">Se déconnecter</button>`;
+    return;
+  }
+  const su = authMode === 'signup';
+  $('#view').innerHTML = `<h2>${su ? 'Créer un compte' : 'Connexion'}</h2>
+    <div class="tabs"><button class="btn ${su ? 'ghost' : ''}" onclick="authMode='login';renderAccount()">Connexion</button><button class="btn ${su ? '' : 'ghost'}" onclick="authMode='signup';renderAccount()">Inscription</button></div>
+    <form onsubmit="submitAuth(event)">
+      ${su ? `<label>Nom complet</label><input name="nom" required autocomplete="name"><label>Téléphone</label><input name="tel" type="tel" inputmode="tel" required autocomplete="tel">` : ''}
+      <label>E-mail</label><input name="email" type="email" required autocomplete="email">
+      <label>Mot de passe</label><input name="pass" type="password" minlength="6" required autocomplete="${su ? 'new-password' : 'current-password'}">
+      <button class="btn full" type="submit" id="ab">${su ? 'Créer mon compte' : 'Me connecter'}</button>
+    </form>`;
+}
+async function submitAuth(e) {
+  e.preventDefault();
+  const fd = new FormData(e.target); const btn = $('#ab'); btn.disabled = true;
+  const email = String(fd.get('email')).trim(), password = String(fd.get('pass'));
+  let res;
+  if (authMode === 'signup') {
+    res = await sb.auth.signUp({ email, password, options: { data: { full_name: String(fd.get('nom')).trim(), phone: String(fd.get('tel')).trim() } } });
+  } else {
+    res = await sb.auth.signInWithPassword({ email, password });
+  }
+  btn.disabled = false;
+  if (res.error) { toast(res.error.message.includes('Invalid login') ? 'E-mail ou mot de passe incorrect' : res.error.message); return; }
+  if (authMode === 'signup' && !res.data.session) { toast('Compte créé. Confirmez votre e-mail puis connectez-vous.'); authMode = 'login'; renderAccount(); return; }
+  toast('Bienvenue sur PubliGo !');
+}
+async function logout() { await sb.auth.signOut(); toast('Déconnecté'); }
+
+/* ====== Démarrage ====== */
+(async function init() {
+  const { data } = await sb.auth.getSession();
+  user = data.session ? data.session.user : null;
+  sb.auth.onAuthStateChange((_ev, session) => {
+    const was = !!user; user = session ? session.user : null;
+    if (was !== !!user) go('home');
+  });
+  go('home');
+})();
+</script>
+</body>
+</html>
